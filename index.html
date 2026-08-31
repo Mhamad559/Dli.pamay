@@ -3,20 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>دڵی پەمەیی</title>
+  <title id="appTitle">دڵی پەمەیی</title>
 
-  <!-- PWA & Mobile App Support -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="دڵی پەمەیی">
+  <meta name="apple-mobile-web-app-title" content="دڵی پەمەیی" id="metaAppTitle">
   <meta name="application-name" content="دڵی پەمەیی">
-  <meta name="theme-color" content="#050205">
+  <meta name="theme-color" content="#050205" id="metaThemeColor">
 
-  <!-- SVG Icon (ئایکۆنی درەوشاوەی دڵی پەمەیی بۆ ئاپەکە) -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23050205'/><path d='M50 82 C20 60 10 42 10 28 A18 18 0 0 1 44 18 L50 25 L56 18 A18 18 0 0 1 90 28 C90 42 80 60 50 82 Z' fill='%23f43f5e' filter='drop-shadow(0 0 8px %23ec4899)'/></svg>">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23050205'/><path d='M50 82 C20 60 10 42 10 28 A18 18 0 0 1 44 18 L50 25 L56 18 A18 18 0 0 1 90 28 C90 42 80 60 50 82 Z' fill='%23f43f5e' filter='drop-shadow(0 0 8px %23ec4899)'/></svg>">
-
-  <!-- Web Manifest dynamic setup -->
   <link rel="manifest" id="manifestPlaceholder">
 
   <style>
@@ -50,15 +44,86 @@
 <canvas id="heartCanvas"></canvas>
 
 <script>
-  // دروستکردنی مانێفێست بۆ ناساندنی ناو و ئایکۆنی ئەپەکە
-  const iconSVG = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23050205'/><path d='M50 82 C20 60 10 42 10 28 A18 18 0 0 1 44 18 L50 25 L56 18 A18 18 0 0 1 90 28 C90 42 80 60 50 82 Z' fill='%23f43f5e' filter='drop-shadow(0 0 8px %23ec4899)'/></svg>`;
+  // ==========================================
+  // 🎨 ڕێکخستنی شێواز و ڕەنگەکان (TEMPLATES)
+  // ==========================================
+  // دەتوانیت یەکێک لەم تێمانە هەڵبژێریت یان ڕەنگی خۆت دابنێی:
+  // "pink" , "blue" , "gold" , "purple" , "green" , "red"
+  const CURRENT_TEMPLATE = "pink"; 
+
+  const THEMES = {
+    pink: {
+      name: "دڵی پەمەیی",
+      bg: "#050205",
+      shades: ["#ec4899", "#f43f5e", "#f472b6", "#fb7185", "#fbcfe8", "#e11d48", "#ff66c4"],
+      glow: "#ec4899"
+    },
+    blue: {
+      name: "دڵی شین",
+      bg: "#020308",
+      shades: ["#3b82f6", "#60a5fa", "#93c5fd", "#2563eb", "#1d4ed8", "#93c5fd", "#67e8f9"],
+      glow: "#3b82f6"
+    },
+    gold: {
+      name: "دڵی زێڕین",
+      bg: "#050502",
+      shades: ["#f59e0b", "#fbbf24", "#fcd34d", "#d97706", "#b45309", "#fef3c7", "#fde047"],
+      glow: "#f59e0b"
+    },
+    purple: {
+      name: "دڵی مۆر",
+      bg: "#040206",
+      shades: ["#a855f7", "#c084fc", "#e879f9", "#9333ea", "#7e22ce", "#f3e8ff", "#d8b4fe"],
+      glow: "#a855f7"
+    },
+    green: {
+      name: "دڵی سەوز",
+      bg: "#020503",
+      shades: ["#10b981", "#34d399", "#6ee7b7", "#059669", "#047857", "#a7f3d0", "#6ee7b7"],
+      glow: "#10b981"
+    },
+    red: {
+      name: "دڵی سوور",
+      bg: "#050202",
+      shades: ["#ef4444", "#f87171", "#dc2626", "#b91c1c", "#fca5a5", "#fee2e2", "#ef4444"],
+      glow: "#ef4444"
+    }
+  };
+
+  const theme = THEMES[CURRENT_TEMPLATE] || THEMES.pink;
+
+  // نوێکردنەوەی ناوی پەڕە و ڕەنگەکان لە HTMLدا
+  document.getElementById("appTitle").innerText = theme.name;
+  document.getElementById("metaAppTitle").setAttribute("content", theme.name);
+  document.getElementById("metaThemeColor").setAttribute("content", theme.bg);
+  document.body.style.backgroundColor = theme.bg;
+
+  // دروستکردنی ئایکۆنی SVG بەپێی ئەو ڕەنگەی هەڵبژێردراوە
+  const encodedGlow = encodeURIComponent(theme.glow);
+  const encodedMain = encodeURIComponent(theme.shades[0]);
+  const encodedBg = encodeURIComponent(theme.bg);
+  
+  const iconSVG = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='${encodedBg}'/><path d='M50 82 C20 60 10 42 10 28 A18 18 0 0 1 44 18 L50 25 L56 18 A18 18 0 0 1 90 28 C90 42 80 60 50 82 Z' fill='${encodedMain}' filter='drop-shadow(0 0 8px ${encodedGlow})'/></svg>`;
+  
+  const linkIcon = document.createElement('link');
+  linkIcon.rel = 'icon';
+  linkIcon.type = 'image/svg+xml';
+  linkIcon.href = iconSVG;
+  document.head.appendChild(linkIcon);
+
+  const linkAppleIcon = document.createElement('link');
+  linkAppleIcon.rel = 'apple-touch-icon';
+  linkAppleIcon.href = iconSVG;
+  document.head.appendChild(linkAppleIcon);
+
+  // دروستکردنی مانێفێست بۆ ئاپەکە
   const manifestData = {
-    "name": "دڵی پەمەیی",
-    "short_name": "دڵی پەمەیی",
+    "name": theme.name,
+    "short_name": theme.name,
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#050205",
-    "theme_color": "#050205",
+    "background_color": theme.bg,
+    "theme_color": theme.bg,
     "icons": [
       {
         "src": iconSVG,
@@ -87,11 +152,6 @@
     height = canvas.height = window.innerHeight;
   });
 
-  const PINK_SHADES = [
-    "#ec4899", "#f43f5e", "#f472b6", 
-    "#fb7185", "#fbcfe8", "#e11d48", "#ff66c4"
-  ];
-
   class Particle {
     constructor(x, y, isBurst = false) {
       this.init(x, y, isBurst);
@@ -99,7 +159,7 @@
 
     init(x, y, isBurst = false) {
       this.isBurst = isBurst;
-      this.color = PINK_SHADES[(Math.random() * PINK_SHADES.length) | 0];
+      this.color = theme.shades[(Math.random() * theme.shades.length) | 0];
       
       if (!isBurst) {
         this.t = Math.random() * Math.PI * 2;
@@ -182,7 +242,7 @@
 
   function animate() {
     ctx.globalCompositeOperation = "source-over";
-    ctx.fillStyle = "rgba(5, 2, 5, 0.2)";
+    ctx.fillStyle = theme.bg + "33"; // گۆڕینی پاشماوەی ڕەنگەکە بەپێی تێما
     ctx.fillRect(0, 0, width, height);
 
     ctx.globalCompositeOperation = "lighter";
